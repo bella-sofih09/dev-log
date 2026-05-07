@@ -1,26 +1,45 @@
+import 'dotenv/config';
 import express from 'express';
 import morgan from 'morgan';
-import projectRoutes from './routes/projectRoutes.js';
+import projectRoutes from './routes/projectsRoutes.js'
+const app = express(); //cria instacia do express
 
-const app = express ();
+// ── Middlewares globais ──────────────────────────────────────
+app.use(morgan('dev'));
+app.use(express.json()); //lida com o formato json
 
-app.use (express.json());
-app.use (morgan ('dev'));
 
+// ── Rotas ────────────────────────────────────────────────────
 app.use('/api/v1/projects', projectRoutes);
 
-const port = 3000;
-//git.com douglaslegramante>repositorios
-//GitHub - douglaslegramante/devlog-api-2b · GitHub
-//https://github.com/douglaslegramante/devlog-api-2b <===
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    env: process.env.NODE_ENV,
+    version: '1.0.0'
+  });
+});
 
-app.get('/health', (req, res) =>
-res.json({status: "OK"}));
+// ── Middleware de 404 ────────────────────────────────────────
+app.use((req, res, next) => {
+  res.status(404).json({
+    error: 'Rota não encontrada',
+    path: req.path,
+    method: req.method
+  });
+});
 
-//monta router no prefixo==caminho
-app.use('/api/v1/projects', projectRoutes);// o restante e definido no routes
+// ── Error handler (4 params — SEMPRE ÚLTIMO) ─────────────────
+app.use((err, req, res, next) => {
+  console.error(err.message);
+  res.status(err.statusCode || 500).json({
+    error: err.message || 'Erro interno do servidor'
+  });
+});
 
-app.listen(port, () => { //cria a fincao para que o servidor inicie esperando as requicicoes atraves dA porta criada
-    let data = new Date(); //express ja esta rodando
-console.log(`Servidor iniciado em ${data}`)
+const PORT = process.env.PORT || 3000; //fallback para porta 3000
+
+app.listen(PORT, () => {
+  console.log(`Servidor rodando na porta ${PORT}`);
+  console.log(`Ambiente: ${process.env.NODE_ENV || 'development'}`);
 });
