@@ -1,12 +1,14 @@
 import 'dotenv/config';
 import express from 'express';
 import morgan from 'morgan';
-import projectRoutes from './routes/projectsRoutes.js'
+import projectRoutes from './routes/projectsRoutes.js';
+import { login } from './controllers/authController.js';
 const app = express(); //cria instacia do express
 
 // ── Middlewares globais ──────────────────────────────────────
 app.use(morgan('dev'));
 app.use(express.json()); //lida com o formato json
+app.post ('/auth/login', login);
 
 
 // ── Rotas ────────────────────────────────────────────────────
